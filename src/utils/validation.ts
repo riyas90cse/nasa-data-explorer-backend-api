@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+/**
+ * Zod schema for validating date strings in YYYY-MM-DD format
+ * Ensures the date is both properly formatted and valid
+ */
 export const dateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
@@ -11,10 +15,17 @@ export const dateSchema = z
     { message: 'Invalid date' }
   );
 
+/**
+ * Zod schema for validating APOD API query parameters
+ */
 export const apodQuerySchema = z.object({
   date: dateSchema.optional(),
 });
 
+/**
+ * Zod schema for validating NEO API query parameters
+ * Includes a refinement to ensure the date range doesn't exceed 7 days
+ */
 export const neoQuerySchema = z
   .object({
     start_date: dateSchema,
@@ -34,6 +45,12 @@ export const neoQuerySchema = z
     }
   );
 
+/**
+ * Validates if a string is in YYYY-MM-DD format and represents a valid date
+ * 
+ * @param dateString - The date string to validate
+ * @returns True if the date is valid and in the correct format, false otherwise
+ */
 export const validateDateFormat = (dateString: string): boolean => {
   const regex = /^\d{4}-\d{2}-\d{2}$/;
   if (!regex.test(dateString)) return false;
@@ -42,6 +59,13 @@ export const validateDateFormat = (dateString: string): boolean => {
   return (!Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === dateString);
 };
 
+/**
+ * Calculates the number of days between two dates
+ * 
+ * @param startDate - Start date in YYYY-MM-DD format
+ * @param endDate - End date in YYYY-MM-DD format
+ * @returns Number of days between the two dates
+ */
 export const getDaysDifference = (
   startDate: string,
   endDate: string

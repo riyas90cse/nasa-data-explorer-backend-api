@@ -9,7 +9,17 @@ import {
 import { validateDateFormat } from '../utils/validation';
 import { BaseService } from './baseService';
 
+/**
+ * Service for handling Astronomy Picture of the Day (APOD) data from NASA API
+ */
 class APODService extends BaseService {
+  /**
+   * Fetches the Astronomy Picture of the Day from NASA API
+   * 
+   * @param date - Optional date in YYYY-MM-DD format. If not provided, returns today's APOD
+   * @returns Promise with the APOD data wrapped in an API response object
+   * @throws APIError if a date format is invalid or if there's an error fetching the data
+   */
   public async getAPOD(date?: string): Promise<APIResponse<APODResponse>> {
     try {
       const params: Record<string, string> = {};

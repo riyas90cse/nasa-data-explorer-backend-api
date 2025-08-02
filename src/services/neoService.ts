@@ -14,11 +14,17 @@ import {
 import { validateDateFormat, getDaysDifference } from '../utils/validation';
 import { BaseService } from './baseService';
 
+/**
+ * Interface for NASA API response structure for Near Earth Objects
+ */
 interface NASAAPIResponse {
   near_earth_objects: Record<string, NASANEOObject[]>;
   element_count: number;
 }
 
+/**
+ * Interface for individual Near Earth Object from NASA API
+ */
 interface NASANEOObject {
   id: string;
   name: string;
@@ -27,7 +33,18 @@ interface NASANEOObject {
   close_approach_data: CloseApproachData[];
 }
 
+/**
+ * Service for handling Near Earth Objects (NEO) data from NASA API
+ */
 class NEOService extends BaseService {
+  /**
+   * Fetches Near Earth Objects data for a specified date range
+   * 
+   * @param startDate - Start date in YYYY-MM-DD format
+   * @param endDate - End date in YYYY-MM-DD format (must be within 7 days of startDate)
+   * @returns Promise with the NEO data wrapped in an API response object
+   * @throws APIError if the date format is invalid, date range exceeds 7 days, or if there's an error fetching the data
+   */
   public async getNearEarthObjects(
     startDate: string,
     endDate: string

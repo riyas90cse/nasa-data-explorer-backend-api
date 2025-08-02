@@ -16,7 +16,17 @@ import {
 } from '../utils/validation';
 import { HTTP_STATUS, ERROR_MESSAGES } from '../utils/constants';
 
+/**
+ * Controller for handling Near Earth Objects (NEO) related requests
+ */
 class NEOController {
+  /**
+   * Retrieves Near Earth Objects data for a specified date range
+   * 
+   * @param req - Express request object with start_date and end_date query parameters
+   * @param res - Express response object
+   * @param next - Express next function for error handling
+   */
   public async getNearEarthObjects(
     req: TypedRequest<NEOQuery>,
     res: TypedResponse<APIResponse<NEOResponse>>,

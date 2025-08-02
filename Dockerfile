@@ -13,7 +13,7 @@ RUN npm install
 # Copy the rest of the application source code
 COPY . .
 
-# Your app's port (assuming 5000, change if different)
+# App's port (assuming 5000, change if different)
 EXPOSE 5000
 
 # The command to run your app using nodemon for development

@@ -1,3 +1,10 @@
+/**
+ * NASA Data Explorer API - Main Application Entry Point
+ * 
+ * This file sets up the Express application with middleware, routes, and error handlers.
+ * It configures CORS, security headers, logging, and Swagger documentation.
+ */
+
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';

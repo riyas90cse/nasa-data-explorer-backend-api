@@ -16,7 +16,17 @@ import {
 } from '../utils/validation';
 import { HTTP_STATUS } from '../utils/constants';
 
+/**
+ * Controller for handling Astronomy Picture of the Day (APOD) related requests
+ */
 class ApodController {
+    /**
+     * Retrieves the Astronomy Picture of the Day from NASA's API
+     * 
+     * @param req - Express request object with optional date query parameter
+     * @param res - Express response object
+     * @param next - Express next function for error handling
+     */
     public async getAPOD(
         req: TypedRequest<APODQuery>,
         res: TypedResponse<APIResponse<APODResponse>>,

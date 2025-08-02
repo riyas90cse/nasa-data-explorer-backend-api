@@ -1,6 +1,10 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import { Options } from 'swagger-jsdoc';
 
+/**
+ * Swagger/OpenAPI configuration options
+ * Defines the API documentation structure, schemas, and endpoints
+ */
 const options: Options = {
   definition: {
     openapi: '3.0.0',
@@ -341,4 +345,8 @@ const options: Options = {
   apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
 };
 
+/**
+ * Generated Swagger/OpenAPI specification
+ * Used by swagger-ui-express to render the API documentation
+ */
 export const specs = swaggerJsdoc(options);
