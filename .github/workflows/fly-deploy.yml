@@ -1,0 +1,61 @@
+name: Deploy to Fly.io (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: "Fly.io app name"
+        required: true
+        type: string
+      region:
+        description: "Region (optional, e.g. iad, lax, fra)"
+        required: false
+        type: string
+        default: ""
+      set_secrets:
+        description: "Set/rotate secrets during this run"
+        required: false
+        type: boolean
+        default: false
+      NASA_API_KEY:
+        description: "NASA_API_KEY value (optional if set in Fly already)"
+        required: false
+        type: string
+      FRONTEND_ORIGIN:
+        description: "FRONTEND_ORIGIN value (optional if set in Fly already)"
+        required: false
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly.io
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [[ -z "$FLY_API_TOKEN" ]]; then
+            echo "FLY_API_TOKEN secret is not set. Add it in GitHub repo settings: Settings -> Secrets and variables -> Actions" >&2
+            exit 1
+          fi
+
+          if [[ "${{ inputs.set_secrets }}" == "true" ]]; then
+            SECRETS_ARGS=()
+            if [[ -n "${{ inputs.NASA_API_KEY }}" ]]; then SECRETS_ARGS+=("NASA_API_KEY=${{ inputs.NASA_API_KEY }}"); fi
+            if [[ -n "${{ inputs.FRONTEND_ORIGIN }}" ]]; then SECRETS_ARGS+=("FRONTEND_ORIGIN=${{ inputs.FRONTEND_ORIGIN }}"); fi
+            if [[ ${#SECRETS_ARGS[@]} -gt 0 ]]; then
+              flyctl secrets set "${SECRETS_ARGS[@]}" -a "${{ inputs.app_name }}"
+            fi
+          fi
+
+          EXTRA_ARGS=()
+          if [[ -n "${{ inputs.region }}" ]]; then EXTRA_ARGS+=("-r" "${{ inputs.region }}"); fi
+          flyctl deploy -a "${{ inputs.app_name }}" --remote-only "${EXTRA_ARGS[@]}"

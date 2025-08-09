@@ -133,6 +133,92 @@ Notes:
 - `FRONTEND_ORIGIN` can be a comma-separated list, e.g. `https://app.example.com,https://admin.example.com`.
 - By default, production CORS is disabled if `FRONTEND_ORIGIN` is not set (no wildcard allowed). Set it to the exact origins you need.
 
+## Deployment: Fly.io
+
+Deploy the API globally using Fly.io with the existing multi-stage Dockerfile.
+
+> Using the provided files
+> - Copy `fly.toml.example` to `fly.toml` and set `app` and `primary_region`.
+> - Optional manual deploy via GitHub Actions: use `.github/workflows/fly-deploy.yml` (workflow_dispatch). Set `FLY_API_TOKEN` in GitHub repo Settings → Secrets and variables → Actions.
+
+### Prerequisites
+- Fly CLI: `brew install flyctl` (macOS) or see https://fly.io/docs/hands-on/install-flyctl/
+- Fly account: `flyctl auth signup` (or `flyctl auth login`)
+- Git repository pushed to a remote (recommended)
+
+### 1) App initialization
+```bash
+# From the project root
+flyctl launch
+```
+When prompted:
+- Use existing Dockerfile: Yes
+- App name: accept or set a unique name
+- Organization/Region: choose your preference
+- Internal port: 8000
+- Create a Postgres DB: No
+- Deploy now: No (we’ll set secrets first)
+
+This generates a `fly.toml`. Confirm it includes:
+- `internal_port = 8000`
+- Health check hitting `/health` (you can add later if needed)
+
+### 2) Configure secrets
+```bash
+flyctl secrets set \
+  NASA_API_KEY=your_real_key \
+  FRONTEND_ORIGIN=https://your-frontend.example.com
+```
+Notes:
+- `FRONTEND_ORIGIN` can be a comma-separated list for multiple origins.
+- `NODE_ENV` defaults to production in container; you don’t need to set it.
+
+### 3) Deploy
+```bash
+flyctl deploy
+```
+Fly will build using the Dockerfile’s production stage and release the app.
+
+### 4) Verify
+```bash
+flyctl status
+flyctl logs
+```
+Open the assigned URL from `flyctl status` (e.g. `https://<app>.fly.dev`).
+- API root: `https://<app>.fly.dev/`
+- Health: `https://<app>.fly.dev/health`
+- Swagger: `https://<app>.fly.dev/api-docs`
+
+### 5) Scale (optional)
+```bash
+# Scale to 0.25 CPU and 256MB RAM
+flyctl scale vm shared-cpu-1x --memory 256
+
+# Add an additional region instance
+flyctl scale count 2
+```
+
+### 6) Custom domain & TLS (optional)
+```bash
+flyctl certs create api.example.com
+# Follow DNS instructions; Fly provisions TLS automatically
+```
+
+### Common commands
+```bash
+flyctl deploy                 # Build & release
+flyctl logs -a <app>          # Stream logs
+flyctl status -a <app>        # App status
+flyctl open -a <app>          # Open app URL
+flyctl secrets set KEY=VAL    # Set/rotate secrets
+flyctl apps destroy <app>     # Remove app
+```
+
+Troubleshooting
+- 502/healthcheck failing: ensure the service listens on port 8000 and `/health` responds 200.
+- CORS blocked: set FRONTEND_ORIGIN to your exact frontend origin(s) (scheme + host + optional port).
+- NASA rate limits: use your own key (avoid DEMO_KEY in production).
+
 ## Available Scripts
 
 - `npm start`: Start the production server
