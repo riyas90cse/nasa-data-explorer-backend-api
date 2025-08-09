@@ -30,6 +30,15 @@ class APODService extends BaseService {
             HTTP_STATUS.BAD_REQUEST
           );
         }
+        // APOD is only available from 1995-06-16 onwards and not for future dates
+        const MIN_APOD_DATE = '1995-06-16';
+        const today = new Date().toISOString().slice(0, 10);
+        if (date < MIN_APOD_DATE || date > today) {
+          throw new APIError(
+            `APOD not available for date ${date}. Valid range is ${MIN_APOD_DATE} to ${today}.`,
+            HTTP_STATUS.BAD_REQUEST
+          );
+        }
         params.date = date;
       }
 

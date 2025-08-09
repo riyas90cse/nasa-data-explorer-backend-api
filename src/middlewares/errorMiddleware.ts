@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { APIResponse } from '../types/api.types';
 import { HTTP_STATUS, ERROR_MESSAGES } from '../utils/constants';
+import logger from '../utils/logger';
 
 /**
  * Custom API error class that extends the standard Error
@@ -85,10 +86,7 @@ export const errorHandler = (
     }
   }
 
-  console.error(`Error ${statusCode}: ${message}`);
-  if (process.env.NODE_ENV === 'development') {
-    console.error(error.stack);
-  }
+  logger.error({ statusCode, err: error, path: (error as any).path }, `Error ${statusCode}: ${message}`);
 
   res.status(statusCode).json({
     success: false,

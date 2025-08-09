@@ -2,6 +2,17 @@
 
 A comprehensive RESTful API for exploring NASA's open data, including Astronomy Picture of the Day (APOD), Near Earth Objects (NEO), Mars Rover photos, EPIC Earth images, and NASA's Image and Video Library.
 
+## Quick start
+
+```bash
+git clone https://github.com/yourusername/nasa-data-explorer-backend-api.git
+cd nasa-data-explorer-backend-api
+cp .env.example .env && npm install
+npm run dev
+```
+
+API: http://localhost:8000  |  Docs: http://localhost:8000/api-docs
+
 ## Features
 
 - **Astronomy Picture of the Day (APOD)**: Get NASA's daily astronomy images with descriptions
@@ -29,10 +40,11 @@ API documentation is available at `/api-docs` when the server is running. The do
 ### Prerequisites
 
 - Node.js (v18 or higher)
-- npm or yarn
-- NASA API Key (optional, falls back to DEMO_KEY)
+- npm
+- Docker (optional, for running via containers)
+- NASA API Key (optional, the app falls back to DEMO_KEY for non-critical usage)
 
-### Installation
+### Installation (local without Docker)
 
 1. Clone the repository:
    ```bash
@@ -58,19 +70,68 @@ API documentation is available at `/api-docs` when the server is running. The do
    npm run dev
    ```
 
-The server will start at `http://localhost:8000` with API documentation available at `http://localhost:8000/api-docs`.
+The server will start at `http://localhost:8000` with API documentation at `http://localhost:8000/api-docs`.
 
-### Docker Setup
+### Environment setup
 
-1. Build the Docker image:
-   ```bash
-   docker build -t nasa-data-explorer-api .
-   ```
+If you're starting fresh, copy the example environment file and fill in values as needed:
 
-2. Run the container:
-   ```bash
-   docker run -p 5000:5000 -e PORT=5000 -e NASA_API_KEY=your_nasa_api_key nasa-data-explorer-api
-   ```
+```bash
+cp .env.example .env
+# Edit .env and set NASA_API_KEY (and FRONTEND_ORIGIN for production)
+```
+
+Then proceed with either the local dev flow above or the Docker flows below.
+
+### Run with Docker
+
+This repo includes a multi-stage Dockerfile and a docker-compose.yml configured for both development and production.
+
+#### Development (with live reload)
+
+Uses the `api-dev` service (compose profile `dev`) which runs `npm run dev` and mounts your local code into the container.
+
+```bash
+# Set your NASA key (optional) and allowed frontend origins
+export NASA_API_KEY=your_nasa_api_key
+export FRONTEND_ORIGIN=http://localhost:3000
+
+# Start the dev stack (node + hot reload)
+docker compose --profile dev up -d --build
+
+# View logs
+docker compose --profile dev logs -f
+
+# Stop
+docker compose --profile dev down
+```
+
+The API will be available at http://localhost:8000. Swagger UI: http://localhost:8000/api-docs
+
+#### Production (single service)
+
+Uses the `api` service which builds the production image, installs only production deps, and runs `node dist/index.js` as a non-root user. A container healthcheck is configured to probe `/health`.
+
+```bash
+# Set secrets and frontend origins as needed (you can also inject via your CI/CD)
+export NASA_API_KEY=your_nasa_api_key
+export FRONTEND_ORIGIN=https://your-frontend.example.com
+
+# Build and start
+docker compose up -d --build
+
+# Check status & logs
+docker compose ps
+docker compose logs -f
+
+# Stop
+docker compose down
+```
+
+Notes:
+- The app listens on port `8000`. Compose maps `8000:8000` by default.
+- `FRONTEND_ORIGIN` can be a comma-separated list, e.g. `https://app.example.com,https://admin.example.com`.
+- By default, production CORS is disabled if `FRONTEND_ORIGIN` is not set (no wildcard allowed). Set it to the exact origins you need.
 
 ## Available Scripts
 
@@ -126,18 +187,35 @@ The server will start at `http://localhost:8000` with API documentation availabl
 
 ## Testing
 
-The project uses Jest for testing. Tests are located in the `src/__tests__` directory.
+The project uses Jest. Tests live in `src/__tests__`.
 
-To run tests:
-```bash
-npm test
-```
+- Local:
+  ```bash
+  npm test
+  ```
+
+- With Docker (using the dev image which includes dev dependencies):
+  ```bash
+  # One-off test run in a container (no need to start the stack)
+  docker compose --profile dev run --rm api-dev npm test
+  ```
 
 ## Environment Variables
 
 - `PORT`: Port for the server (default: 8000)
 - `NODE_ENV`: Environment (development, production)
 - `NASA_API_KEY`: Your NASA API key (falls back to DEMO_KEY if not provided)
+- `FRONTEND_ORIGIN`: Comma-separated list of allowed origins for CORS in production (e.g. `https://app.example.com,https://admin.example.com`). If not provided in production, CORS is disabled.
+
+## Healthcheck
+
+The server exposes `GET /health`. The production container includes a healthcheck that calls this endpoint periodically.
+
+## Troubleshooting
+
+- Port already in use: Change the host port mapping in `docker-compose.yml` (e.g. `"8080:8000"`).
+- CORS errors in production: Ensure `FRONTEND_ORIGIN` is set to the exact origin(s) of your frontend (scheme + host + optional port).
+- NASA API quota errors: Request your own API key at https://api.nasa.gov and set `NASA_API_KEY`.
 
 ## License
 

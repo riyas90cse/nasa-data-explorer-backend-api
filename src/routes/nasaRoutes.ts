@@ -91,7 +91,7 @@ router.get('/neo', neoController.getNearEarthObjects);
  * /api/mars-rover/{rover}/photos:
  *   get:
  *     summary: Get Mars Rover photos
- *     description: Retrieve photos taken by Mars rovers (Curiosity, Opportunity, Spirit)
+ *     description: Retrieve photos taken by Mars rovers (Curiosity, Opportunity, Spirit). If neither sol nor earth_date are provided, the API defaults to the rover's latest available earth_date from its manifest.
  *     tags: [Mars Rover]
  *     parameters:
  *       - in: path
@@ -105,24 +105,24 @@ router.get('/neo', neoController.getNearEarthObjects);
  *         name: sol
  *         schema:
  *           type: string
- *         description: Martian sol (day) when the photo was taken
+ *         description: Martian sol (day) when the photo was taken. Optional.
  *       - in: query
  *         name: earth_date
  *         schema:
  *           type: string
  *           format: date
- *         description: Earth date when the photo was taken (YYYY-MM-DD)
+ *         description: Earth date when the photo was taken (YYYY-MM-DD). Optional. If neither sol nor earth_date are provided, this will default internally to the rover's latest available earth_date.
  *       - in: query
  *         name: camera
  *         schema:
  *           type: string
  *           enum: [FHAZ, RHAZ, MAST, CHEMCAM, MAHLI, MARDI, NAVCAM]
- *         description: Camera used to take the photo
+ *         description: Camera used to take the photo. Optional.
  *       - in: query
  *         name: page
  *         schema:
  *           type: string
- *         description: Page number for pagination
+ *         description: Page number for pagination. Optional.
  *     responses:
  *       200:
  *         description: Mars Rover photos retrieved successfully

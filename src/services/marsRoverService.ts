@@ -38,12 +38,13 @@ class MarsRoverService extends BaseService {
           HTTP_STATUS.BAD_REQUEST
         );
       }
-
-      if (!sol && !earthDate) {
-        throw new APIError(
-          'Either sol or earth_date parameter is required',
-          HTTP_STATUS.BAD_REQUEST
+      // Enhancement: make all params optional except rover.
+      // If neither sol nor earth_date provided, default to latest available earth_date from rover manifest
+      if (sol === undefined && !earthDate) {
+        const manifestResp = await this.client.get<{ photo_manifest: { max_date: string } }>(
+          `/mars-photos/api/v1/manifests/${rover.toLowerCase()}`
         );
+        earthDate = manifestResp.data.photo_manifest.max_date;
       }
 
       const params: Record<string, string | number> = {

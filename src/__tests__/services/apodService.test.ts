@@ -7,10 +7,10 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockAxiosInstance = {
   get: jest.fn(),
   interceptors: {
-    response: {
-      use: jest.fn(),
-    },
+    request: { use: jest.fn() },
+    response: { use: jest.fn() },
   },
+  defaults: { params: {} },
 };
 
 mockedAxios.create.mockReturnValue(mockAxiosInstance as any);

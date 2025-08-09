@@ -18,3 +18,9 @@ bin-release/
 # information for Eclipse / Flash Builder.
 .idea/
 node_modules/
+# Local env and configs
+.env
+.environment
+.environment.*
+.env.*
+!.env.example
